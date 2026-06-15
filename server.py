@@ -33,7 +33,7 @@ templates = Jinja2Templates(
 )
 
 engine = create_engine(
-    "sqlite:///dishwasher.db",
+    "sqlite:///data/dishwasher.db",
     connect_args={
         "check_same_thread": False
     },
