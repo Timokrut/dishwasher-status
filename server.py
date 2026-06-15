@@ -275,6 +275,21 @@ def stats(
             }
         )
 
+    month_labels = []
+
+    current_month = None
+
+    for i, cell in enumerate(cells):
+        date = cell["date"]
+
+        if date.month != current_month:
+            current_month = date.month
+
+            month_labels.append({
+                "index": i // 7,
+                "name": date.strftime("%b"),
+            })
+
     total = sum(
         x["count"]
         for x in cells
@@ -327,6 +342,7 @@ def stats(
             "best_day": best_day,
             "streak": streak,
             "badges": badges,
-            "leader_max": leader_max
+            "leader_max": leader_max,
+            "month_labels": month_labels,
         },
     )

@@ -198,22 +198,65 @@
             {{ selected_user }}
         </div>
 
-        <div class="heatmap-container">
+        <script>
+            window.addEventListener('load', () => {
+                const el =
+                    document.getElementById(
+                        'heatmap-container'
+                    );
 
-            <div class="heatmap">
+                if (el) {
+                    el.scrollLeft =
+                        el.scrollWidth;
+                }
+            });
+        </script>
 
-                {% for c in cells %}
+        <div class="heatmap-container" id="heatmap-container">
+            <div class="heatmap-wrapper">
+                <div class="month-row">
 
-                <div
-                    class="cell level-{{ c.level }}"
-                    title="{{ c.date }} — {{ c.count }}">
+                    {% for m in month_labels %}
+
+                    <div
+                        class="month-label"
+                        style="
+                            left:
+                            {{ m.index * 18 }}px;
+                        ">
+
+                        {{ m.name }}
+                    </div>
+
+                    {% endfor %}
 
                 </div>
 
-                {% endfor %}
+                <div class="heatmap-area">
 
+                    <div class="weekdays">
+
+                        <span>Mon</span>
+                        <span>Wed</span>
+                        <span>Fri</span>
+
+                    </div>
+
+                    <div class="heatmap">
+
+                        {% for c in cells %}
+
+                        <div
+                            class="cell level-{{ c.level }}"
+                            title="{{ c.date }}
+                            — {{ c.count }}">
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+                </div>
             </div>
-
         </div>
 
         <div class="heatmap-legend">
