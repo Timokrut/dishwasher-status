@@ -1,76 +1,321 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="ru">
 <head>
-    <title>Dishwasher</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    <title>🍽 Посудомойка</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
 </head>
 <body>
 
-<h1>🍽 Посудомойка</h1>
+<div class="container">
 
-<a href="/stats">Статистика</a>
+    <div class="hero-card">
 
-<div class="card">
-    <input
-        id="username"
-        placeholder="Ваше имя"
-    >
+        <div class="hero-icon">
+            🍽
+        </div>
 
-    <button onclick="send('assembled')">
-        ✅ Собрал
-    </button>
+        <h1>
+            Посудомойка
+        </h1>
 
-    <button onclick="send('disassembled')">
-        🧹 Разобрал
-    </button>
+        {% if last_event %}
+        <div class="last-action">
+
+            <div class="label">
+                Последнее действие
+            </div>
+
+            <div class="text">
+
+                <strong>
+                    {{ last_event.user }}
+                </strong>
+
+                {% if last_event.action == "disassembled" %}
+                    разобрал
+                {% else %}
+                    собрал
+                {% endif %}
+
+                посудомойку
+
+            </div>
+
+            <div class="time">
+                {{ last_event.relative_time }}
+            </div>
+
+        </div>
+        {% endif %}
+
+        <a
+            class="stats-button"
+            href="/stats">
+
+            📊 Статистика
+
+        </a>
+
+    </div>
+
+    <div class="card">
+
+        <div class="section-title">
+            Кто это сделал?
+        </div>
+
+        <div class="users-grid">
+
+            <button
+                class="user-btn"
+                data-user="Тима"
+                onclick="selectUser('Тима', this)">
+
+                <div class="avatar">
+                    👦
+                </div>
+
+                <div class="name">
+                    Тима
+                </div>
+
+            </button>
+
+            <button
+                class="user-btn"
+                data-user="Алиса"
+                onclick="selectUser('Алиса', this)">
+
+                <div class="avatar">
+                    👧
+                </div>
+
+                <div class="name">
+                    Алиса
+                </div>
+
+            </button>
+
+            <button
+                class="user-btn"
+                data-user="Мама"
+                onclick="selectUser('Мама', this)">
+
+                <div class="avatar">
+                    👩
+                </div>
+
+                <div class="name">
+                    Мама
+                </div>
+
+            </button>
+
+            <button
+                class="user-btn"
+                data-user="Папа"
+                onclick="selectUser('Папа', this)">
+
+                <div class="avatar">
+                    👨
+                </div>
+
+                <div class="name">
+                    Папа
+                </div>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <div class="section-title">
+            Что произошло?
+        </div>
+
+        <div class="actions-grid">
+
+            <button
+                class="action-btn green"
+                onclick="send('disassembled')">
+
+                <div class="emoji">
+                    🧹
+                </div>
+
+                <div>
+                    Разобрал
+                </div>
+
+            </button>
+
+            <button
+                class="action-btn blue"
+                onclick="send('assembled')">
+
+                <div class="emoji">
+                    🍽
+                </div>
+
+                <div>
+                    Собрал
+                </div>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    {% if events %}
+    <div class="card">
+
+        <div class="section-title">
+            Последние действия
+        </div>
+
+        {% for e in events %}
+
+        <div class="event-row">
+
+            <div>
+
+                <div class="event-title">
+
+                    {{ e.user }}
+
+                    {% if e.action == "disassembled" %}
+                        разобрал
+                    {% else %}
+                        собрал
+                    {% endif %}
+
+                    посудомойку
+
+                </div>
+
+                <div class="event-time">
+                    {{ e.relative_time }}
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+    {% endif %}
+
 </div>
 
-<h2>Последние события</h2>
+<form
+    id="event-form"
+    method="post"
+    action="/event">
 
-<ul>
-{% for e in events %}
-<li>
-    {{ e.user }}
-    —
-    {{ e.action }}
-    —
-    {{ e.created_at }}
-</li>
-{% endfor %}
-</ul>
+    <input
+        type="hidden"
+        name="user"
+        id="user-input">
 
-<form id="form" method="post" action="/event">
-    <input type="hidden" name="user" id="hidden_user">
-    <input type="hidden" name="action" id="hidden_action">
+    <input
+        type="hidden"
+        name="action"
+        id="action-input">
+
 </form>
+
+<div
+    id="toast"
+    class="toast">
+
+    ✅ Сохранено
+
+</div>
 
 <script>
 
-const saved = localStorage.getItem("user");
+let selectedUser = null;
 
-if(saved){
-    document.getElementById("username").value = saved;
+function selectUser(
+    user,
+    element
+) {
+    selectedUser = user;
+
+    document
+        .querySelectorAll(
+            '.user-btn'
+        )
+        .forEach(btn => {
+            btn.classList.remove(
+                'selected'
+            );
+        });
+
+    element.classList.add(
+        'selected'
+    );
 }
 
-function send(action){
+function send(action) {
 
-    const user =
-        document.getElementById("username").value;
+    if (!selectedUser) {
 
-    if(!user){
-        alert("Введите имя");
+        alert(
+            'Сначала выберите человека'
+        );
+
         return;
     }
 
-    localStorage.setItem("user", user);
+    document.getElementById(
+        'user-input'
+    ).value = selectedUser;
 
-    document.getElementById("hidden_user").value =
-        user;
+    document.getElementById(
+        'action-input'
+    ).value = action;
 
-    document.getElementById("hidden_action").value =
-        action;
+    document.getElementById(
+        'toast'
+    ).classList.add(
+        'show'
+    );
 
-    document.getElementById("form").submit();
+    setTimeout(() => {
+        document
+            .getElementById(
+                'event-form'
+            )
+            .submit();
+    }, 300);
 }
 
 </script>

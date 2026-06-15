@@ -1,7 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+from collections import defaultdict
 
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Request, Form
 from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from sqlalchemy import (
@@ -12,18 +14,34 @@ from sqlalchemy import (
     DateTime,
     func,
 )
-from sqlalchemy.orm import declarative_base, sessionmaker
+
+from sqlalchemy.orm import (
+    declarative_base,
+    sessionmaker,
+)
 
 app = FastAPI()
 
-templates = Jinja2Templates(directory="templates")
+app.mount(
+    "/static",
+    StaticFiles(directory="static"),
+    name="static",
+)
+
+templates = Jinja2Templates(
+    directory="templates"
+)
 
 engine = create_engine(
     "sqlite:///dishwasher.db",
-    connect_args={"check_same_thread": False},
+    connect_args={
+        "check_same_thread": False
+    },
 )
 
-SessionLocal = sessionmaker(bind=engine)
+SessionLocal = sessionmaker(
+    bind=engine
+)
 
 Base = declarative_base()
 
@@ -31,17 +49,92 @@ Base = declarative_base()
 class Event(Base):
     __tablename__ = "events"
 
-    id = Column(Integer, primary_key=True)
-    user = Column(String, nullable=False)
-    action = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    user = Column(
+        String,
+        nullable=False
+    )
+
+    action = Column(
+        String,
+        nullable=False
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
 
 
 Base.metadata.create_all(engine)
 
 
+# ---------- helpers ----------
+
+def humanize(dt):
+    diff = datetime.utcnow() - dt
+
+    s = int(diff.total_seconds())
+
+    if s < 60:
+        return "только что"
+
+    m = s // 60
+    if m < 60:
+        return f"{m} мин назад"
+
+    h = m // 60
+    if h < 24:
+        return f"{h} ч назад"
+
+    d = h // 24
+    if d < 7:
+        return f"{d} дн назад"
+
+    w = d // 7
+    if w < 5:
+        return f"{w} нед назад"
+
+    mo = d // 30
+    if mo < 12:
+        return f"{mo} мес назад"
+
+    y = d // 365
+    return f"{y} г назад"
+
+
+def get_period_query(query, period):
+    now = datetime.utcnow()
+
+    if period == "week":
+        query = query.filter(
+            Event.created_at >=
+            now - timedelta(days=7)
+        )
+
+    elif period == "month":
+        query = query.filter(
+            Event.created_at >=
+            now - timedelta(days=30)
+        )
+
+    elif period == "year":
+        query = query.filter(
+            Event.created_at >=
+            now - timedelta(days=365)
+        )
+
+    return query
+
+
+# ---------- home ----------
+
 @app.get("/")
-def home(request: Request):
+def index(request: Request):
     db = SessionLocal()
 
     events = (
@@ -51,13 +144,26 @@ def home(request: Request):
         .all()
     )
 
+    for e in events:
+        e.relative_time = humanize(
+            e.created_at
+        )
+
+    last_event = (
+        events[0]
+        if events
+        else None
+    )
+
     return templates.TemplateResponse(
         request=request,
         name="index.html",
         context={
             "events": events,
+            "last_event": last_event,
         },
     )
+
 
 @app.post("/event")
 def add_event(
@@ -75,41 +181,146 @@ def add_event(
 
     db.commit()
 
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse(
+        "/",
+        status_code=303,
+    )
 
+
+# ---------- stats ----------
 
 @app.get("/stats")
-def stats(request: Request):
+def stats(
+    request: Request,
+    user: str = "Тима",
+    period: str = "all",
+):
     db = SessionLocal()
 
-    users = (
-        db.query(
+    query = db.query(Event)
+    query = get_period_query(
+        query,
+        period,
+    )
+
+    leaderboard = (
+        query.with_entities(
             Event.user,
-            func.count(Event.id).label("count")
+            func.count(Event.id)
         )
         .group_by(Event.user)
-        .order_by(func.count(Event.id).desc())
         .all()
     )
 
-    assembled = (
-        db.query(func.count(Event.id))
-        .filter(Event.action == "assembled")
-        .scalar()
+    leaderboard = sorted(
+        leaderboard,
+        key=lambda x: x[1],
+        reverse=True,
     )
 
-    disassembled = (
-        db.query(func.count(Event.id))
-        .filter(Event.action == "disassembled")
-        .scalar()
+    heatmap_query = (
+        query.filter(
+            Event.user == user
+        )
+        .with_entities(
+            func.date(Event.created_at),
+            func.count(Event.id)
+        )
+        .group_by(
+            func.date(Event.created_at)
+        )
+        .all()
     )
+
+    heatmap_data = {
+        str(day): count
+        for day, count
+        in heatmap_query
+    }
+
+    cells = []
+
+    for i in range(365):
+        day = (
+            datetime.utcnow().date()
+            - timedelta(days=364 - i)
+        )
+
+        count = heatmap_data.get(
+            str(day),
+            0,
+        )
+
+        if count == 0:
+            level = 0
+        elif count == 1:
+            level = 1
+        elif count <= 3:
+            level = 2
+        elif count <= 5:
+            level = 3
+        else:
+            level = 4
+
+        cells.append(
+            {
+                "date": day,
+                "count": count,
+                "level": level,
+            }
+        )
+
+    total = sum(
+        x["count"]
+        for x in cells
+    )
+
+    best_day = max(
+        [x["count"] for x in cells],
+        default=0,
+    )
+
+    streak = 0
+
+    for c in reversed(cells):
+        if c["count"] > 0:
+            streak += 1
+        else:
+            break
+
+    badges = []
+
+    if total >= 10:
+        badges.append(
+            "🥉 10 действий"
+        )
+
+    if total >= 25:
+        badges.append(
+            "🥈 25 действий"
+        )
+
+    if total >= 50:
+        badges.append(
+            "🥇 50 действий"
+        )
+
+    if total >= 100:
+        badges.append(
+            "👑 Король посудомойки"
+        )
 
     return templates.TemplateResponse(
         request=request,
         name="stats.html",
         context={
-            "users": users,
-            "assembled": assembled,
-            "disassembled": disassembled,
+            "leaderboard": leaderboard,
+            "selected_user": user,
+            "selected_period": period,
+            "cells": cells,
+            "total": total,
+            "best_day": best_day,
+            "streak": streak,
+            "badges": badges,
         },
     )

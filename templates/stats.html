@@ -1,41 +1,262 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="ru">
 <head>
-    <title>Статистика</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1">
+
+    <title>📊 Статистика</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
 </head>
 <body>
 
-<h1>📊 Статистика</h1>
+<div class="container">
 
-<a href="/">Назад</a>
+    <div class="hero-card">
 
-<div class="card">
-    <h2>Всего собрано</h2>
-    <p>{{ assembled }}</p>
+        <div class="hero-icon">
+            🏆
+        </div>
+
+        <h1>
+            Статистика
+        </h1>
+
+        <a
+            class="stats-button"
+            href="/">
+
+            ← Назад
+
+        </a>
+
+    </div>
+
+    <div class="card">
+
+        <div class="section-title">
+            Период
+        </div>
+
+        <div class="toggle-row">
+
+            <a
+                class="toggle-btn {% if selected_period == 'all' %}active{% endif %}"
+                href="?user={{ selected_user }}&period=all">
+
+                Всё время
+
+            </a>
+
+            <a
+                class="toggle-btn {% if selected_period == 'week' %}active{% endif %}"
+                href="?user={{ selected_user }}&period=week">
+
+                7 дней
+
+            </a>
+
+            <a
+                class="toggle-btn {% if selected_period == 'month' %}active{% endif %}"
+                href="?user={{ selected_user }}&period=month">
+
+                30 дней
+
+            </a>
+
+            <a
+                class="toggle-btn {% if selected_period == 'year' %}active{% endif %}"
+                href="?user={{ selected_user }}&period=year">
+
+                365 дней
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <div class="section-title">
+            Выберите человека
+        </div>
+
+        <div class="toggle-row">
+
+            <a
+                class="toggle-btn {% if selected_user == 'Тима' %}active{% endif %}"
+                href="?user=Тима&period={{ selected_period }}">
+                👦 Тима
+            </a>
+
+            <a
+                class="toggle-btn {% if selected_user == 'Алиса' %}active{% endif %}"
+                href="?user=Алиса&period={{ selected_period }}">
+                👧 Алиса
+            </a>
+
+            <a
+                class="toggle-btn {% if selected_user == 'Мама' %}active{% endif %}"
+                href="?user=Мама&period={{ selected_period }}">
+                👩 Мама
+            </a>
+
+            <a
+                class="toggle-btn {% if selected_user == 'Папа' %}active{% endif %}"
+                href="?user=Папа&period={{ selected_period }}">
+                👨 Папа
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="stats-grid">
+
+        <div class="mini-card">
+
+            <div class="big-number">
+                {{ total }}
+            </div>
+
+            <div class="mini-label">
+                действий
+            </div>
+
+        </div>
+
+        <div class="mini-card">
+
+            <div class="big-number">
+                {{ streak }}
+            </div>
+
+            <div class="mini-label">
+                дней подряд
+            </div>
+
+        </div>
+
+        <div class="mini-card">
+
+            <div class="big-number">
+                {{ best_day }}
+            </div>
+
+            <div class="mini-label">
+                лучший день
+            </div>
+
+        </div>
+
+    </div>
+
+    {% if badges %}
+
+    <div class="card">
+
+        <div class="section-title">
+            Достижения
+        </div>
+
+        <div class="badges">
+
+            {% for badge in badges %}
+                <div class="badge">
+                    {{ badge }}
+                </div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+    <div class="card">
+
+        <div class="section-title">
+            {{ selected_user }}
+        </div>
+
+        <div class="heatmap-container">
+
+            <div class="heatmap">
+
+                {% for c in cells %}
+
+                <div
+                    class="cell level-{{ c.level }}"
+                    title="{{ c.date }} — {{ c.count }}">
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        <div class="heatmap-legend">
+
+            <span>Меньше</span>
+
+            <div class="cell level-0"></div>
+            <div class="cell level-1"></div>
+            <div class="cell level-2"></div>
+            <div class="cell level-3"></div>
+            <div class="cell level-4"></div>
+
+            <span>Больше</span>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <div class="section-title">
+            🏆 Лидерборд
+        </div>
+
+        {% for user, count in leaderboard %}
+
+        <div class="leader-row">
+
+            <div class="leader-user">
+                {{ user }}
+            </div>
+
+            <div class="leader-score">
+                {{ count }}
+            </div>
+
+        </div>
+        
+        {% endfor %}
+
+    </div>
+
 </div>
-
-<div class="card">
-    <h2>Всего разобрано</h2>
-    <p>{{ disassembled }}</p>
-</div>
-
-<h2>Рейтинг сотрудников</h2>
-
-<table>
-<tr>
-    <th>Имя</th>
-    <th>Действий</th>
-</tr>
-
-{% for user, count in users %}
-<tr>
-    <td>{{ user }}</td>
-    <td>{{ count }}</td>
-</tr>
-{% endfor %}
-
-</table>
 
 </body>
 </html>
