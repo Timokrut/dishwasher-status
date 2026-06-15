@@ -240,14 +240,25 @@
 
         {% for user, count in leaderboard %}
 
-        <div class="leader-row">
+        <div class="leader">
 
-            <div class="leader-user">
-                {{ user }}
+            <div class="leader-top">
+
+                <span>
+                    {{ user }}
+                </span>
+
+                <strong>
+                    {{ count }}
+                </strong>
+
             </div>
 
-            <div class="leader-score">
-                {{ count }}
+            <div class="leader-progress">
+
+                <div class="leader-fill" style="width: {{ (count / leader_max) * 100 }}%;">
+                </div>
+
             </div>
 
         </div>

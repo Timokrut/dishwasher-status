@@ -218,6 +218,11 @@ def stats(
         reverse=True,
     )
 
+    leader_max = max(
+        [x[1] for x in leaderboard],
+        default=1,
+    )
+
     heatmap_query = (
         query.filter(
             Event.user == user
@@ -322,5 +327,6 @@ def stats(
             "best_day": best_day,
             "streak": streak,
             "badges": badges,
+            "leader_max": leader_max
         },
     )
