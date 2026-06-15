@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Статистика</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>📊 Статистика</h1>
+
+<a href="/">Назад</a>
+
+<div class="card">
+    <h2>Всего собрано</h2>
+    <p>{{ assembled }}</p>
+</div>
+
+<div class="card">
+    <h2>Всего разобрано</h2>
+    <p>{{ disassembled }}</p>
+</div>
+
+<h2>Рейтинг сотрудников</h2>
+
+<table>
+<tr>
+    <th>Имя</th>
+    <th>Действий</th>
+</tr>
+
+{% for user, count in users %}
+<tr>
+    <td>{{ user }}</td>
+    <td>{{ count }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</body>
+</html>

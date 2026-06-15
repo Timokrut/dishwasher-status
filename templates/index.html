@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dishwasher</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>🍽 Посудомойка</h1>
+
+<a href="/stats">Статистика</a>
+
+<div class="card">
+    <input
+        id="username"
+        placeholder="Ваше имя"
+    >
+
+    <button onclick="send('assembled')">
+        ✅ Собрал
+    </button>
+
+    <button onclick="send('disassembled')">
+        🧹 Разобрал
+    </button>
+</div>
+
+<h2>Последние события</h2>
+
+<ul>
+{% for e in events %}
+<li>
+    {{ e.user }}
+    —
+    {{ e.action }}
+    —
+    {{ e.created_at }}
+</li>
+{% endfor %}
+</ul>
+
+<form id="form" method="post" action="/event">
+    <input type="hidden" name="user" id="hidden_user">
+    <input type="hidden" name="action" id="hidden_action">
+</form>
+
+<script>
+
+const saved = localStorage.getItem("user");
+
+if(saved){
+    document.getElementById("username").value = saved;
+}
+
+function send(action){
+
+    const user =
+        document.getElementById("username").value;
+
+    if(!user){
+        alert("Введите имя");
+        return;
+    }
+
+    localStorage.setItem("user", user);
+
+    document.getElementById("hidden_user").value =
+        user;
+
+    document.getElementById("hidden_action").value =
+        action;
+
+    document.getElementById("form").submit();
+}
+
+</script>
+
+</body>
+</html>
