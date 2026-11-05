@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+    <section class="error-card">
+        <p class="eyebrow">
+            НЕ ПОЛУЧИЛОСЬ СОХРАНИТЬ ИЗМЕНЕНИЕ
+        </p>
+        <h1>
+            Попробуем ещё раз?
+        </h1>
+        <p>
+            {{ message }}
+        </p>
+        <a href="/" class="back-link">
+            Вернуться к отметке →
+        </a>
+    </section>
+{% endblock %}

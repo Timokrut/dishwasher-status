@@ -1,316 +1,215 @@
-<!doctype html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1">
-
-    <title>📊 Статистика</title>
-
-    <link
-        rel="stylesheet"
-        href="/static/style.css">
-
-    <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com">
-
-    <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
-</head>
-<body>
-
-<div class="container">
-
-    <div class="hero-card">
-
-        <div class="hero-icon">
-            🏆
+{% extends 'base.html' %}
+{% block title %}
+    Статистика · Посудомойка
+{% endblock %}
+{% block content %}
+    <section class="page-heading">
+        <div>
+            <p class="eyebrow">
+                КАЖДЫЙ ВКЛАД ВАЖЕН
+            </p>
+            <h1>
+                Забота в цифрах.
+            </h1>
+            <p class="subtitle">
+                Маленькие дела складываются в большую помощь.
+            </p>
         </div>
-
-        <h1>
-            Статистика
-        </h1>
-
-        <a
-            class="stats-button"
-            href="/">
-
-            ← Назад
-
+        <a class="back-link" href="/">
+            ← К отметке
         </a>
-
+    </section>
+    <section class="filter-card" aria-label="Фильтры статистики">
+        <div class="filter-group">
+            <span class="filter-label">
+                Период
+            </span>
+            <nav class="segmented" aria-label="Период">
+                {% for key, label in periods.items() %}
+                    <a href="?user={{ selected_user|urlencode }}&period={{ key }}" class="{% if selected_period == key %}active{% endif %}" {% if selected_period == key %}aria-current="true"{% endif %}>
+                        {{ label }}
+                    </a>
+                {% endfor %}
+            </nav>
+        </div>
+        <div class="filter-group">
+            <span class="filter-label">
+                Участник
+            </span>
+            <nav class="person-filters" aria-label="Участник">
+                {% for user in users %}
+                    <a class="person-filter {% if selected_user == user.name %}active{% endif %}" href="?user={{ user.name|urlencode }}&period={{ selected_period }}" {% if selected_user == user.name %}aria-current="true"{% endif %}>
+                        <span class="avatar {{ user.color }}" aria-hidden="true">
+                            {{ user.initial }}
+                        </span>
+                        {{ user.name }}
+                    </a>
+                {% endfor %}
+            </nav>
+        </div>
+    </section>
+    <div class="stats-heading">
+        <h2>
+            {{ selected_user }}
+            <span>
+                · {{ periods[selected_period]|lower }}
+            </span>
+        </h2>
     </div>
-
-    <div class="card">
-
-        <div class="section-title">
-            Период
-        </div>
-
-        <div class="toggle-row">
-
-            <a
-                class="toggle-btn {% if selected_period == 'all' %}active{% endif %}"
-                href="?user={{ selected_user }}&period=all">
-
-                Всё время
-
-            </a>
-
-            <a
-                class="toggle-btn {% if selected_period == 'week' %}active{% endif %}"
-                href="?user={{ selected_user }}&period=week">
-
-                7 дней
-
-            </a>
-
-            <a
-                class="toggle-btn {% if selected_period == 'month' %}active{% endif %}"
-                href="?user={{ selected_user }}&period=month">
-
-                30 дней
-
-            </a>
-
-            <a
-                class="toggle-btn {% if selected_period == 'year' %}active{% endif %}"
-                href="?user={{ selected_user }}&period=year">
-
-                365 дней
-
-            </a>
-
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <div class="section-title">
-            Выберите человека
-        </div>
-
-        <div class="toggle-row">
-
-            <a
-                class="toggle-btn {% if selected_user == 'Тима' %}active{% endif %}"
-                href="?user=Тима&period={{ selected_period }}">
-                👦 Тима
-            </a>
-
-            <a
-                class="toggle-btn {% if selected_user == 'Алиса' %}active{% endif %}"
-                href="?user=Алиса&period={{ selected_period }}">
-                👧 Алиса
-            </a>
-
-            <a
-                class="toggle-btn {% if selected_user == 'Мама' %}active{% endif %}"
-                href="?user=Мама&period={{ selected_period }}">
-                👩 Мама
-            </a>
-
-            <a
-                class="toggle-btn {% if selected_user == 'Папа' %}active{% endif %}"
-                href="?user=Папа&period={{ selected_period }}">
-                👨 Папа
-            </a>
-
-        </div>
-
-    </div>
-
-    <div class="stats-grid">
-
-        <div class="mini-card">
-
-            <div class="big-number">
+    <div class="metrics-grid">
+        <section class="metric">
+            <span class="metric-label">
+                Всего действий
+            </span>
+            <strong>
                 {{ total }}
-            </div>
-
-            <div class="mini-label">
-                действий
-            </div>
-
-        </div>
-
-        <div class="mini-card">
-
-            <div class="big-number">
+            </strong>
+            <small>
+                Из них {{ unloaded|plural('разгрузка', 'разгрузки', 'разгрузок') }} и {{ loaded|plural('загрузка', 'загрузки', 'загрузок') }}
+            </small>
+        </section>
+        <section class="metric">
+            <span class="metric-label">
+                Дней подряд
+            </span>
+            <strong>
                 {{ streak }}
-            </div>
-
-            <div class="mini-label">
-                дней подряд
-            </div>
-
-        </div>
-
-        <div class="mini-card">
-
-            <div class="big-number">
+                <span class="metric-unit">
+                    дн.
+                </span>
+            </strong>
+            <small>
+                Серия до сегодня или вчера в выбранном периоде
+            </small>
+        </section>
+        <section class="metric">
+            <span class="metric-label">
+                Лучший день
+            </span>
+            <strong>
                 {{ best_day }}
-            </div>
-
-            <div class="mini-label">
-                лучший день
-            </div>
-
-        </div>
-
+            </strong>
+            <small>
+                Больше всего действий за день в этом периоде
+            </small>
+        </section>
     </div>
-
     {% if badges %}
-
-    <div class="card">
-
-        <div class="section-title">
-            Достижения
-        </div>
-
-        <div class="badges">
-
+        <section class="achievements" aria-label="Достижения за всё время">
+            <span>
+                Достижения за всё время
+            </span>
             {% for badge in badges %}
-                <div class="badge">
+                <span class="achievement">
                     {{ badge }}
+                </span>
+            {% endfor %}
+        </section>
+    {% endif %}
+    <div class="stats-columns">
+        <section class="calendar-card">
+            <div class="section-heading">
+                <h2>
+                    Ритм маленьких дел
+                </h2>
+                <span class="small-pill">
+                    {{ calendar_days }} дней
+                </span>
+            </div>
+            <p class="section-hint">
+                {% if selected_period == 'all' %}
+                    Календарь за последний год. Счётчики выше — за всё время.
+                {% else %}
+                    Активность за выбранный период.
+                {% endif %}
+                Нажмите на день.
+            </p>
+            <div class="heatmap-container" id="heatmap-container" tabindex="0" role="region" aria-label="Календарь активности">
+                <div class="heatmap-wrapper">
+                    <div class="month-row">
+                        {% for m in month_labels %}
+                            <span style="left: {{ m.index * 16 }}px">
+                                {{ m.name }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                    <div class="heatmap-area">
+                        <div class="weekdays" aria-hidden="true">
+                            <span>
+                                пн
+                            </span>
+                            <span>
+                                ср
+                            </span>
+                            <span>
+                                пт
+                            </span>
+                        </div>
+                        <div class="heatmap">
+                            {% for c in cells %}
+                                {% if c.padding %}
+                                    <span class="cell padding-cell">
+                                    </span>
+                                {% else %}
+                                    <button type="button" class="cell level-{{ c.level }}" title="{{ c.date.strftime('%d.%m.%Y') }}: {{ c.count|plural('действие', 'действия', 'действий') }}" aria-label="{{ c.date.strftime('%d.%m.%Y') }}: {{ c.count|plural('действие', 'действия', 'действий') }}" data-day-label="{{ c.date.strftime('%d.%m.%Y') }} · {{ c.count|plural('действие', 'действия', 'действий') }}">
+                                    </button>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="calendar-bottom">
+                <span id="day-detail" aria-live="polite">
+                    Каждый квадрат — один день
+                </span>
+                <div class="heatmap-legend" aria-label="Насыщенность: от 0 до 4 и более действий">
+                    <span>
+                        0
+                    </span>
+                    {% for level in range(5) %}
+                        <i class="cell level-{{ level }}">
+                        </i>
+                    {% endfor %}
+                    <span>
+                        4+
+                    </span>
+                </div>
+            </div>
+        </section>
+        <section class="leaderboard-card">
+            <div class="section-heading">
+                <h2>
+                    Вместе за этот период
+                </h2>
+                <span class="small-pill">
+                    {{ family_total }}
+                </span>
+            </div>
+            {% for name, count in leaderboard %}
+                <div class="leader">
+                    <div class="leader-top">
+                        <span>
+                            <span class="leader-rank">
+                                {{ loop.index }}
+                            </span>
+                            {{ name }}
+                        </span>
+                        <strong>
+                            {{ count }}
+                        </strong>
+                    </div>
+                    <div class="leader-track">
+                        <div style="width: {{ (count / leader_max * 100)|round(2) }}%">
+                        </div>
+                    </div>
                 </div>
             {% endfor %}
-
-        </div>
-
+            {% if family_total == 0 %}
+                <p class="section-hint">
+                    Пока нет отметок. Впереди много маленьких дел.
+                </p>
+            {% endif %}
+        </section>
     </div>
-
-    {% endif %}
-
-    <div class="card">
-
-        <div class="section-title">
-            {{ selected_user }}
-        </div>
-
-        <script>
-            window.addEventListener('load', () => {
-                const el =
-                    document.getElementById(
-                        'heatmap-container'
-                    );
-
-                if (el) {
-                    el.scrollLeft =
-                        el.scrollWidth;
-                }
-            });
-        </script>
-
-        <div class="heatmap-container" id="heatmap-container">
-            <div class="heatmap-wrapper">
-                <div class="month-row">
-
-                    {% for m in month_labels %}
-
-                    <div
-                        class="month-label"
-                        style="
-                            left:
-                            {{ m.index * 18 }}px;
-                        ">
-
-                        {{ m.name }}
-                    </div>
-
-                    {% endfor %}
-
-                </div>
-
-                <div class="heatmap-area">
-
-                    <div class="weekdays">
-
-                        <span>Mon</span>
-                        <span>Wed</span>
-                        <span>Fri</span>
-
-                    </div>
-
-                    <div class="heatmap">
-
-                        {% for c in cells %}
-
-                        <div
-                            class="cell level-{{ c.level }}"
-                            title="{{ c.date }}
-                            — {{ c.count }}">
-                        </div>
-
-                        {% endfor %}
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="heatmap-legend">
-
-            <span>Меньше</span>
-
-            <div class="cell level-0"></div>
-            <div class="cell level-1"></div>
-            <div class="cell level-2"></div>
-            <div class="cell level-3"></div>
-            <div class="cell level-4"></div>
-
-            <span>Больше</span>
-
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <div class="section-title">
-            🏆 Лидерборд
-        </div>
-
-        {% for user, count in leaderboard %}
-
-        <div class="leader">
-
-            <div class="leader-top">
-
-                <span>
-                    {{ user }}
-                </span>
-
-                <strong>
-                    {{ count }}
-                </strong>
-
-            </div>
-
-            <div class="leader-progress">
-
-                <div class="leader-fill" style="width: {{ (count / leader_max) * 100 }}%;">
-                </div>
-
-            </div>
-
-        </div>
-        
-        {% endfor %}
-
-    </div>
-
-</div>
-
-</body>
-</html>
+{% endblock %}

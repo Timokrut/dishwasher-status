@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta name="theme-color" content="#f4f3ed">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-title" content="Посудомойка">
+        <title>
+            {% block title %}
+                Посудомойка · Домашние дела
+            {% endblock %}
+        </title>
+        <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+        <link rel="manifest" href="/static/manifest.webmanifest">
+        <link rel="stylesheet" href="/static/style.css?v=2">
+        <script>
+            try { if (localStorage.getItem('dishwasher-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}
+        </script>
+        <script src="/static/app.js?v=2" defer>
+        </script>
+    </head>
+    <body data-revision="{{ revision|default('') }}" data-page="{{ page }}">
+        <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <symbol id="i-dish" viewBox="0 0 48 48">
+                <rect x="8" y="5" width="32" height="38" rx="5"/>
+                <path d="M8 14h32M14 10h.01M19 10h.01"/>
+                <circle cx="24" cy="28" r="9"/>
+                <path d="M24 22a6 6 0 0 0 0 12"/>
+            </symbol>
+            <symbol id="i-out" viewBox="0 0 24 24">
+                <path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5M12 16V3m-5 5 5-5 5 5"/>
+            </symbol>
+            <symbol id="i-in" viewBox="0 0 24 24">
+                <path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5M12 3v13m-5-5 5 5 5-5"/>
+            </symbol>
+            <symbol id="i-check" viewBox="0 0 24 24">
+                <path d="m5 12 4 4L19 6"/>
+            </symbol>
+            <symbol id="i-chart" viewBox="0 0 24 24">
+                <path d="M5 20V10m7 10V4m7 16v-7"/>
+            </symbol>
+            <symbol id="i-screen" viewBox="0 0 24 24">
+                <path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>
+            </symbol>
+            <symbol id="i-moon" viewBox="0 0 24 24">
+                <path d="M20 14a9 9 0 0 1-10-11 9 9 0 1 0 10 11Z"/>
+            </symbol>
+            <symbol id="i-arrow" viewBox="0 0 24 24">
+                <path d="M4 12h16m-6-6 6 6-6 6"/>
+            </symbol>
+        </svg>
+        <div class="shell">
+            <header class="header">
+                <a href="/" class="brand" aria-label="Посудомойка — главная">
+                    <span class="brand-mark">
+                        <svg class="icon">
+                            <use href="#i-dish"/>
+                        </svg>
+                    </span>
+                    <span>
+                        Посудомойка
+                        <small>
+                            МАЛЕНЬКИЕ ДЕЛА. ОБЩИЙ ДОМ.
+                        </small>
+                    </span>
+                </a>
+                <nav class="nav" aria-label="Основная навигация">
+                    <a href="/" class="{% if page == 'home' %}active{% endif %}" {% if page == 'home' %}aria-current="page"{% endif %}>
+                        Отметиться
+                    </a>
+                    <a href="/stats" class="{% if page == 'stats' %}active{% endif %}" {% if page == 'stats' %}aria-current="page"{% endif %}>
+                        Статистика
+                    </a>
+                </nav>
+                <div class="header-tools">
+                    <button class="icon-button" id="theme-toggle" type="button" aria-label="Переключить светлую и тёмную тему" title="Сменить тему">
+                        <svg class="icon">
+                            <use href="#i-moon"/>
+                        </svg>
+                    </button>
+                    <button class="icon-button" id="fullscreen-toggle" type="button" aria-label="Открыть на весь экран" title="На весь экран">
+                        <svg class="icon">
+                            <use href="#i-screen"/>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+            <main id="main">
+                {% block content %}
+                {% endblock %}
+            </main>
+            <footer class="footer">
+                <span>
+                    <span class="connection-dot" id="connection-dot">
+                    </span>
+                    <span id="connection-label" role="status">
+                        Общая кухонная панель
+                    </span>
+                </span>
+                <span class="footer-note">
+                    Спасибо за заботу о доме
+                    <span aria-hidden="true">
+                        ♡
+                    </span>
+                </span>
+                <span id="clock">
+                </span>
+            </footer>
+        </div>
+        <div id="notice" class="notice" role="status" hidden>
+        </div>
+    </body>
+</html>

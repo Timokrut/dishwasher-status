@@ -1,324 +1,296 @@
-<!doctype html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, viewport-fit=cover">
-
-    <title>🍽 Посудомойка</title>
-
-    <link
-        rel="stylesheet"
-        href="/static/style.css">
-
-    <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com">
-
-    <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
-</head>
-<body>
-
-<div class="container">
-
-    <div class="hero-card">
-
-        <div class="hero-icon">
-            🍽
-        </div>
-
-        <h1>
-            Посудомойка
-        </h1>
-
-        {% if last_event %}
-        <div class="last-action">
-
-            <div class="label">
-                Последнее действие
-            </div>
-
-            <div class="text">
-
-                <strong>
-                    {{ last_event.user }}
-                </strong>
-
-                {% if last_event.action == "disassembled" %}
-                    разобрал
-                {% else %}
-                    собрал
-                {% endif %}
-
-                посудомойку
-
-            </div>
-
-            <div class="time">
-                {{ last_event.relative_time }}
-            </div>
-
-        </div>
-        {% endif %}
-
-        <a
-            class="stats-button"
-            href="/stats">
-
-            📊 Статистика
-
-        </a>
-
-    </div>
-
-    <div class="card">
-
-        <div class="section-title">
-            Кто это сделал?
-        </div>
-
-        <div class="users-grid">
-
-            <button
-                class="user-btn"
-                data-user="Тима"
-                onclick="selectUser('Тима', this)">
-
-                <div class="avatar">
-                    👦
-                </div>
-
-                <div class="name">
-                    Тима
-                </div>
-
-            </button>
-
-            <button
-                class="user-btn"
-                data-user="Алиса"
-                onclick="selectUser('Алиса', this)">
-
-                <div class="avatar">
-                    👧
-                </div>
-
-                <div class="name">
-                    Алиса
-                </div>
-
-            </button>
-
-            <button
-                class="user-btn"
-                data-user="Мама"
-                onclick="selectUser('Мама', this)">
-
-                <div class="avatar">
-                    👩
-                </div>
-
-                <div class="name">
-                    Мама
-                </div>
-
-            </button>
-
-            <button
-                class="user-btn"
-                data-user="Папа"
-                onclick="selectUser('Папа', this)">
-
-                <div class="avatar">
-                    👨
-                </div>
-
-                <div class="name">
-                    Папа
-                </div>
-
-            </button>
-
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <div class="section-title">
-            Что произошло?
-        </div>
-
-        <div class="actions-grid">
-
-            <button
-                class="action-btn green"
-                onclick="send('disassembled')">
-
-                <div class="emoji">
-                    🧹
-                </div>
-
+{% extends 'base.html' %}
+{% macro event_rows(items) %}
+    <ol class="event-list">
+        {% for event in items %}
+            <li class="event-row">
+                <span class="event-icon {% if event.action == 'disassembled' %}sage{% else %}sand{% endif %}">
+                    <svg class="icon">
+                        <use href="{% if event.action == 'disassembled' %}#i-out{% else %}#i-in{% endif %}"/>
+                    </svg>
+                </span>
                 <div>
-                    Разобрал
+                    <strong>
+                        {{ event.user }}
+                    </strong>
+                    <span>
+                        {{ event.label }}
+                    </span>
                 </div>
-
-            </button>
-
-            <button
-                class="action-btn blue"
-                onclick="send('assembled')">
-
-                <div class="emoji">
-                    🍽
-                </div>
-
-                <div>
-                    Собрал
-                </div>
-
-            </button>
-
-        </div>
-
-    </div>
-
-    {% if events %}
-    <div class="card">
-
-        <div class="section-title">
-            Последние действия
-        </div>
-
-        {% for e in events %}
-
-        <div class="event-row">
-
-            <div>
-
-                <div class="event-title">
-
-                    {{ e.user }}
-
-                    {% if e.action == "disassembled" %}
-                        разобрал
-                    {% else %}
-                        собрал
-                    {% endif %}
-
-                    посудомойку
-
-                </div>
-
-                <div class="event-time">
-                    {{ e.relative_time }}
-                </div>
-
-            </div>
-
-        </div>
-
+                <time datetime="{{ event.iso }}">
+                    {{ event.relative_time }}
+                </time>
+            </li>
         {% endfor %}
-
+    </ol>
+{% endmacro %}
+{% block content %}
+    <section class="page-heading">
+        <div>
+            <p class="eyebrow">
+                ВСЁ ПО ПОЛОЧКАМ
+            </p>
+            <h1>
+                Чистая посуда —
+                <br class="mobile-break">
+                общее дело.
+            </h1>
+            <p class="subtitle">
+                Пара касаний, и все знают, кто помог.
+            </p>
+        </div>
+        <div class="date-card">
+            <span id="today-date">
+                Сегодня
+            </span>
+            <span class="date-note">
+                Хороший день для маленьких дел
+            </span>
+        </div>
+    </section>
+    <div class="dashboard">
+        <div class="main-column">
+            <section class="status-card {% if last_event and last_event.action == 'assembled' %}is-loaded{% endif %}" aria-labelledby="status-title">
+                <div class="status-copy">
+                    <p class="eyebrow">
+                        <span class="status-dot">
+                        </span>
+                        ПОСЛЕДНЯЯ ОТМЕТКА
+                    </p>
+                    {% if not last_event %}
+                        <h2 id="status-title">
+                            Начнём с чистого листа
+                        </h2>
+                        <p>
+                            Отметьте загрузку или разгрузку посуды.
+                        </p>
+                    {% elif last_event.action == 'disassembled' %}
+                        <h2 id="status-title">
+                            Можно загружать
+                        </h2>
+                        <p>
+                            <strong>
+                                {{ last_event.user }}
+                            </strong>
+                            · разгрузка ·
+                            <time datetime="{{ last_event.iso }}">
+                                {{ last_event.relative_time }}
+                            </time>
+                        </p>
+                    {% else %}
+                        <h2 id="status-title">
+                            Посуда внутри
+                        </h2>
+                        <p>
+                            <strong>
+                                {{ last_event.user }}
+                            </strong>
+                            · загрузка ·
+                            <time datetime="{{ last_event.iso }}">
+                                {{ last_event.relative_time }}
+                            </time>
+                        </p>
+                    {% endif %}
+                    {% if saved_event %}
+                        <div class="status-feedback" role="status">
+                            <span>
+                                ✓ Отметка сохранена
+                            </span>
+                            {% if saved_token %}
+                                <form action="/event/undo" method="post" class="async-form">
+                                    <input type="hidden" name="token" value="{{ saved_token }}">
+                                    <button type="submit" class="undo-button">
+                                        Отменить
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% elif undone %}
+                        <span class="status-caption" role="status">
+                            ✓ Отметка отменена. История обновлена.
+                        </span>
+                    {% else %}
+                        <span class="status-caption">
+                            {% if last_event and last_event.action == 'assembled' %}
+                                Готовность посуды проверьте на самой машине.
+                            {% else %}
+                                Больше места для следующего семейного ужина.
+                            {% endif %}
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="machine-illustration" aria-hidden="true">
+                    <div class="machine-top">
+                        <i>
+                        </i>
+                        <i>
+                        </i>
+                        <span>
+                        </span>
+                    </div>
+                    <div class="machine-door">
+                        <div class="plate plate-back">
+                        </div>
+                        <div class="plate">
+                        </div>
+                        <div class="glass">
+                        </div>
+                        <div class="rack">
+                        </div>
+                    </div>
+                    <div class="machine-feet">
+                    </div>
+                    <span class="sparkle sparkle-one">
+                        ✧
+                    </span>
+                    <span class="sparkle sparkle-two">
+                        ✦
+                    </span>
+                </div>
+            </section>
+            <section class="checkin-card" aria-labelledby="checkin-title">
+                <form id="event-form" class="async-form" method="post" action="/event">
+                    <input type="hidden" name="request_id" value="{{ request_id }}">
+                    <fieldset>
+                        <legend id="checkin-title">
+                            <span class="step-number">
+                                1
+                            </span>
+                            Кто сегодня помог?
+                        </legend>
+                        <p class="section-hint">
+                            Выберите себя. После отметки выбор сбросится.
+                        </p>
+                        <div class="users-grid">
+                            {% for user in users %}
+                                <label class="user-option">
+                                    <input type="radio" name="user" value="{{ user.name }}" required>
+                                    <span class="user-tile">
+                                        <span class="avatar {{ user.color }}" aria-hidden="true">
+                                            {{ user.initial }}
+                                        </span>
+                                        <span class="user-name">
+                                            {{ user.name }}
+                                        </span>
+                                        <span class="selection-check" aria-hidden="true">
+                                            ✓
+                                        </span>
+                                    </span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                    <fieldset class="action-fieldset">
+                        <legend>
+                            <span class="step-number">
+                                2
+                            </span>
+                            Что удалось сделать?
+                        </legend>
+                        <div class="actions-grid">
+                            <button type="submit" name="action" value="disassembled" class="action-button unload">
+                                <svg class="icon">
+                                    <use href="#i-out"/>
+                                </svg>
+                                <span>
+                                    <strong>
+                                        Разгрузить
+                                    </strong>
+                                    <small>
+                                        Чистая посуда уже на полках
+                                    </small>
+                                </span>
+                                <span class="action-arrow" aria-hidden="true">
+                                    ↗
+                                </span>
+                            </button>
+                            <button type="submit" name="action" value="assembled" class="action-button load">
+                                <svg class="icon">
+                                    <use href="#i-in"/>
+                                </svg>
+                                <span>
+                                    <strong>
+                                        Загрузить
+                                    </strong>
+                                    <small>
+                                        Посуда собрана в машине
+                                    </small>
+                                </span>
+                                <span class="action-arrow" aria-hidden="true">
+                                    ↘
+                                </span>
+                            </button>
+                        </div>
+                    </fieldset>
+                    <p class="form-footnote" id="form-hint" aria-live="polite">
+                        Сначала человек, потом действие. Всё просто.
+                    </p>
+                </form>
+            </section>
+        </div>
+        <aside class="side-column">
+            <section class="history-card" aria-labelledby="history-title">
+                <div class="section-heading">
+                    <h2 id="history-title">
+                        Последние дела
+                    </h2>
+                    <span class="small-pill">
+                        {{ [events|length, 6]|min }}
+                    </span>
+                </div>
+                {% if events %}
+                    {{ event_rows(events[:6]) }}
+                    {% if events|length > 6 %}
+                        <details class="history-more">
+                            <summary>
+                                Ещё записи
+                            </summary>
+                            {{ event_rows(events[6:]) }}
+                        </details>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <svg class="icon">
+                            <use href="#i-dish"/>
+                        </svg>
+                        <p>
+                            Здесь появятся
+                            <br>
+                            ваши маленькие подвиги.
+                        </p>
+                        <small>
+                            Первая отметка — за вами.
+                        </small>
+                    </div>
+                {% endif %}
+            </section>
+            <section class="week-card">
+                <div class="section-heading">
+                    <h2>
+                        Вклад за 7 дней
+                    </h2>
+                    <svg class="icon">
+                        <use href="#i-chart"/>
+                    </svg>
+                </div>
+                <div class="weekly-people">
+                    {% for name, count in weekly %}
+                        <div>
+                            <strong>
+                                {{ count }}
+                            </strong>
+                            <span>
+                                {{ name }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+                <a class="text-link" href="/stats?period=week">
+                    Вся семейная статистика
+                    <svg class="icon">
+                        <use href="#i-arrow"/>
+                    </svg>
+                </a>
+            </section>
+        </aside>
     </div>
-    {% endif %}
-
-</div>
-
-<form
-    id="event-form"
-    method="post"
-    action="/event">
-
-    <input
-        type="hidden"
-        name="user"
-        id="user-input">
-
-    <input
-        type="hidden"
-        name="action"
-        id="action-input">
-
-</form>
-
-<div
-    id="toast"
-    class="toast">
-
-    ✅ Сохранено
-
-</div>
-
-<script>
-
-let selectedUser = null;
-
-function selectUser(
-    user,
-    element
-) {
-    selectedUser = user;
-
-    document
-        .querySelectorAll(
-            '.user-btn'
-        )
-        .forEach(btn => {
-            btn.classList.remove(
-                'selected'
-            );
-        });
-
-    element.classList.add(
-        'selected'
-    );
-}
-
-function send(action) {
-
-    if (!selectedUser) {
-
-        alert(
-            'Сначала выберите человека'
-        );
-
-        return;
-    }
-
-    document.getElementById(
-        'user-input'
-    ).value = selectedUser;
-
-    document.getElementById(
-        'action-input'
-    ).value = action;
-
-    document.getElementById(
-        'toast'
-    ).classList.add(
-        'show'
-    );
-
-    setTimeout(() => {
-        document
-            .getElementById(
-                'event-form'
-            )
-            .submit();
-    }, 300);
-}
-
-</script>
-
-</body>
-</html>
+{% endblock %}
