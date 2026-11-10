@@ -1,5 +1,12 @@
 """A small, shared kitchen check-in board. Existing events stay compatible."""
 import os
+import json
+import math
+from threading import Lock
+from time import monotonic
+from urllib.error import URLError
+from urllib.parse import urlencode
+from urllib.request import Request as URLRequest, urlopen
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -29,6 +36,44 @@ USER_NAMES = {user["name"] for user in USERS}
 ACTIONS = {"disassembled": "Разгрузка", "assembled": "Загрузка"}
 PERIODS = {"all": "Всё время", "week": "7 дней", "month": "30 дней", "year": "365 дней"}
 UNDO_SECONDS = 120
+
+WEATHER_TZ = ZoneInfo("Europe/Moscow")
+WEATHER_URL = "https://api.open-meteo.com/v1/forecast?" + urlencode({
+    "latitude": 59.94, "longitude": 30.31,
+    "current": "temperature_2m,weather_code,is_day",
+    "daily": "temperature_2m_min,temperature_2m_max,precipitation_probability_max",
+    "timezone": "Europe/Moscow", "forecast_days": 1,
+})
+WEATHER_TTL = 15 * 60
+WEATHER_MAX_AGE = 2 * 60 * 60
+_weather_lock = Lock()
+_weather_cache = {"data": None, "expires": 0, "retry_after": 0}
+
+
+def fetch_weather():
+    """Fetch only the fixed city forecast; never access the household database."""
+    request = URLRequest(WEATHER_URL, headers={"User-Agent": "dishwasher-status/1.0"})
+    with urlopen(request, timeout=5) as response:
+        payload = json.load(response)
+    current, daily = payload["current"], payload["daily"]
+    forecast_date = daily["time"][0]
+    if forecast_date != datetime.now(WEATHER_TZ).date().isoformat():
+        raise ValueError("Forecast is not for today")
+    fields = {
+        "temperature": current["temperature_2m"], "code": current["weather_code"],
+        "is_day": current["is_day"], "low": daily["temperature_2m_min"][0],
+        "high": daily["temperature_2m_max"][0],
+        "precipitation": daily["precipitation_probability_max"][0],
+    }
+    if any(type(value) not in (int, float) or not math.isfinite(value) for value in fields.values()):
+        raise ValueError("Incomplete weather data")
+    if fields["low"] > fields["high"] or not 0 <= fields["precipitation"] <= 100:
+        raise ValueError("Invalid daily forecast")
+    if fields["is_day"] not in (0, 1) or not 0 <= fields["code"] <= 99:
+        raise ValueError("Invalid weather conditions")
+    return {**fields, "forecast_date": forecast_date,
+            "updated_at": datetime.now(timezone.utc).isoformat()}
+
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False, "timeout": 15})
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
@@ -212,6 +257,30 @@ def status():
     with SessionLocal() as db:
         last = latest_event(db)
         return JSONResponse({"latest_id": last.id if last else 0, "revision": event_revision(last)}, headers={"Cache-Control": "no-store"})
+
+
+@app.get("/api/weather")
+def weather():
+    # This separate endpoint keeps a slow weather provider out of check-in requests.
+    with _weather_lock:
+        now = monotonic()
+        today = datetime.now(WEATHER_TZ).date().isoformat()
+        data = _weather_cache["data"]
+        same_day = bool(data and data["forecast_date"] == today)
+        if same_day and now < _weather_cache["expires"]:
+            return JSONResponse({**data, "stale": False}, headers={"Cache-Control": "no-store"})
+        if now >= _weather_cache["retry_after"]:
+            try:
+                data = fetch_weather()
+            except (OSError, URLError, ValueError, KeyError, IndexError, TypeError):
+                _weather_cache["retry_after"] = monotonic() + 60
+            else:
+                _weather_cache.update(data=data, expires=monotonic() + WEATHER_TTL, retry_after=0)
+                return JSONResponse({**data, "stale": False}, headers={"Cache-Control": "no-store"})
+        if same_day and now - _weather_cache["expires"] + WEATHER_TTL < WEATHER_MAX_AGE:
+            return JSONResponse({**_weather_cache["data"], "stale": True}, headers={"Cache-Control": "no-store"})
+        return JSONResponse({"detail": "Прогноз временно недоступен"}, status_code=503,
+                            headers={"Cache-Control": "no-store"})
 
 
 @app.get("/stats")

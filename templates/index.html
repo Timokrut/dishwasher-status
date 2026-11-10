@@ -24,11 +24,21 @@
     </ol>
 {% endmacro %}
 {% block content %}
-    <section class="home-heading" aria-label="Дата и время">
+    <section class="home-heading" aria-label="Дата, время и погода">
         <h1 class="date-time">
             <span id="today-date">Сегодня</span>
             <span class="date-time-clock" id="clock">--:--</span>
         </h1>
+        <div class="weather" id="weather" role="status" aria-live="polite">
+            <svg class="icon weather-icon" id="weather-icon" aria-hidden="true" hidden>
+                <use href="#i-weather-cloud"/>
+            </svg>
+            <strong class="weather-temperature" id="weather-temperature" hidden></strong>
+            <div class="weather-details">
+                <span class="weather-city">Санкт-Петербург</span>
+                <span class="weather-forecast" id="weather-forecast">Загружаем прогноз…</span>
+            </div>
+        </div>
         <span class="connection-status">
             <span class="connection-dot" id="connection-dot" aria-hidden="true"></span>
             <span id="connection-label" role="status">Проверяем связь…</span>

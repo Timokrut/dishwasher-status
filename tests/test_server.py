@@ -186,5 +186,70 @@ class DishwasherTests(unittest.TestCase):
         self.assertIn("Ещё записи", home.text)
 
 
+class WeatherTests(unittest.TestCase):
+    def setUp(self):
+        self.original_cache = server._weather_cache.copy()
+        server._weather_cache.update(data=None, expires=0, retry_after=0)
+        self.client = TestClient(server.app)
+        self.data = {"temperature": 4.3, "code": 3, "is_day": 0, "low": 3.3,
+                     "high": 6.6, "precipitation": 70,
+                     "forecast_date": datetime.now(server.WEATHER_TZ).date().isoformat(),
+                     "updated_at": datetime.now(timezone.utc).isoformat()}
+
+    def tearDown(self):
+        self.client.close()
+        server._weather_cache.update(self.original_cache)
+
+    def test_weather_cache_avoids_repeated_external_requests(self):
+        with patch.object(server, "fetch_weather", return_value=self.data) as fetch:
+            with patch.object(server, "monotonic", return_value=1000):
+                first = self.client.get("/api/weather")
+            with patch.object(server, "monotonic", return_value=1300):
+                second = self.client.get("/api/weather")
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(first.json(), second.json())
+        self.assertFalse(first.json()["stale"])
+        fetch.assert_called_once()
+
+    def test_provider_failure_uses_recent_data_and_backs_off(self):
+        server._weather_cache.update(data=self.data, expires=1900)
+        with patch.object(server, "fetch_weather", side_effect=OSError("offline")) as fetch:
+            with patch.object(server, "monotonic", return_value=2000):
+                first = self.client.get("/api/weather")
+            with patch.object(server, "monotonic", return_value=2030):
+                second = self.client.get("/api/weather")
+        self.assertEqual(first.status_code, 200)
+        self.assertTrue(first.json()["stale"])
+        self.assertEqual(second.json()["updated_at"], self.data["updated_at"])
+        fetch.assert_called_once()
+
+    def test_unavailable_empty_old_or_previous_day_forecasts(self):
+        for cached, expires in [(None, 0), (self.data, 1000),
+                                ({**self.data, "forecast_date": "2000-01-01"}, 20000)]:
+            with self.subTest(cached=cached, expires=expires):
+                server._weather_cache.update(data=cached, expires=expires, retry_after=0)
+                with patch.object(server, "monotonic", return_value=10000), patch.object(server, "fetch_weather", side_effect=OSError("offline")):
+                    response = self.client.get("/api/weather")
+                self.assertEqual(response.status_code, 503)
+                self.assertNotIn("temperature", response.json())
+
+    def test_parse_real_provider_format_and_reject_missing_values(self):
+        import io
+        import json
+        payload = {"current": {"temperature_2m": 4.3, "weather_code": 3, "is_day": 0},
+                   "daily": {"time": [self.data["forecast_date"]], "temperature_2m_min": [3.3],
+                             "temperature_2m_max": [6.6], "precipitation_probability_max": [70]}}
+        with patch.object(server, "urlopen", return_value=io.BytesIO(json.dumps(payload).encode())) as request:
+            data = server.fetch_weather()
+        self.assertEqual(data["temperature"], 4.3)
+        self.assertEqual(data["precipitation"], 70)
+        self.assertEqual(request.call_args.kwargs["timeout"], 5)
+        for invalid in [None, float("nan"), "4.3"]:
+            payload["current"]["temperature_2m"] = invalid
+            with patch.object(server, "urlopen", return_value=io.BytesIO(json.dumps(payload).encode())):
+                with self.assertRaises(ValueError):
+                    server.fetch_weather()
+
+
 if __name__ == "__main__":
     unittest.main()
