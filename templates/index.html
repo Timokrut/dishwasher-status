@@ -24,28 +24,15 @@
     </ol>
 {% endmacro %}
 {% block content %}
-    <section class="page-heading">
-        <div>
-            <p class="eyebrow">
-                ВСЁ ПО ПОЛОЧКАМ
-            </p>
-            <h1>
-                Чистая посуда —
-                <br class="mobile-break">
-                общее дело.
-            </h1>
-            <p class="subtitle">
-                Пара касаний, и все знают, кто помог.
-            </p>
-        </div>
-        <div class="date-card">
-            <span id="today-date">
-                Сегодня
-            </span>
-            <span class="date-note">
-                Хороший день для маленьких дел
-            </span>
-        </div>
+    <section class="home-heading" aria-label="Дата и время">
+        <h1 class="date-time">
+            <span id="today-date">Сегодня</span>
+            <span class="date-time-clock" id="clock">--:--</span>
+        </h1>
+        <span class="connection-status">
+            <span class="connection-dot" id="connection-dot" aria-hidden="true"></span>
+            <span id="connection-label" role="status">Проверяем связь…</span>
+        </span>
     </section>
     <div class="dashboard">
         <div class="main-column">
@@ -108,14 +95,6 @@
                         <span class="status-caption" role="status">
                             ✓ Отметка отменена. История обновлена.
                         </span>
-                    {% else %}
-                        <span class="status-caption">
-                            {% if last_event and last_event.action == 'assembled' %}
-                                Готовность посуды проверьте на самой машине.
-                            {% else %}
-                                Больше места для следующего семейного ужина.
-                            {% endif %}
-                        </span>
                     {% endif %}
                 </div>
                 <div class="machine-illustration" aria-hidden="true">
@@ -155,11 +134,8 @@
                             <span class="step-number">
                                 1
                             </span>
-                            Кто сегодня помог?
+                            Выберите себя
                         </legend>
-                        <p class="section-hint">
-                            Выберите себя. После отметки выбор сбросится.
-                        </p>
                         <div class="users-grid">
                             {% for user in users %}
                                 <label class="user-option">
@@ -221,9 +197,6 @@
                             </button>
                         </div>
                     </fieldset>
-                    <p class="form-footnote" id="form-hint" aria-live="polite">
-                        Сначала человек, потом действие. Всё просто.
-                    </p>
                 </form>
             </section>
         </div>

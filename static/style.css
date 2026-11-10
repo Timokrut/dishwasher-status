@@ -118,7 +118,7 @@ button: focus-visible,a:focus-visible,input:focus-visible {
 }
 
 .header {
-    min-height: 104px;
+    min-height: 88px;
     display: flex;
     align-items: center;
     gap: 28px;
@@ -138,16 +138,16 @@ button: focus-visible,a:focus-visible,input:focus-visible {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 49px;
-    height: 53px;
+    width: 44px;
+    height: 48px;
     background: var(--green);
     color: var(--bg);
     border-radius: 15px;
 }
 
 .brand-mark .icon {
-    width: 39px;
-    height: 39px;
+    width: 35px;
+    height: 35px;
     stroke-width: 1.5;
 }
 
@@ -156,7 +156,7 @@ button: focus-visible,a:focus-visible,input:focus-visible {
     font-size: 8px;
     font-weight: 600;
     color: var(--muted);
-    letter-spacing: 1.5px;
+    letter-spacing: .6px;
     margin-top: 5px;
 }
 
@@ -252,24 +252,6 @@ h2 {
     display: none;
 }
 
-.date-card {
-    text-align: right;
-    padding-top: 20px;
-}
-
-.date-card>span {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.date-card .date-note {
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 400;
-    margin-top: 5px;
-}
-
 .dashboard {
     display: grid;
     grid-template-columns: minmax(0,1.7fr) minmax(280px,1fr);
@@ -285,11 +267,11 @@ h2 {
 }
 
 .status-card {
-    min-height: 205px;
+    min-height: 132px;
     background: var(--sage-bg);
     border: 1px solid transparent;
     border-radius: var(--radius);
-    padding: 28px 30px;
+    padding: 20px 30px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -326,7 +308,7 @@ h2 {
 
 .status-card p:not(.eyebrow) {
     font-size: 12px;
-    margin: 13px 0;
+    margin: 10px 0 0;
     color: var(--sage-ink);
 }
 
@@ -351,9 +333,11 @@ h2 {
 .machine-illustration {
     width: 100px;
     height: 124px;
-    position: relative;
-    transform: rotate(-7deg);
-    margin-right: 9px;
+    position: absolute;
+    top: 50%;
+    right: 24px;
+    transform: translateY(-50%) rotate(-7deg) scale(.8);
+    margin-right: 0;
     border: 2px solid var(--sage-ink);
     border-radius: 10px 10px 5px 5px;
     color: var(--sage-ink);
@@ -523,6 +507,7 @@ legend {
 }
 
 .users-grid {
+    margin-top: 16px;
     display: grid;
     grid-template-columns: repeat(4,minmax(0,1fr));
     gap: 10px;
@@ -685,14 +670,6 @@ legend {
     opacity: .6;
 }
 
-.form-footnote {
-    font-size: 10px;
-    color: var(--muted);
-    margin: 17px 0 0;
-    text-align: center;
-    min-height: 15px;
-}
-
 .history-card {
     padding: 24px 23px 9px;
 }
@@ -851,22 +828,6 @@ legend {
     height: 18px;
 }
 
-.footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 25px 0;
-    font-size: 10px;
-    color: var(--muted);
-}
-
-.footer>span:first-child {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-}
-
 .connection-dot {
     width: 5px;
     height: 5px;
@@ -878,10 +839,6 @@ legend {
 
 .connection-dot.offline {
     background: #b76d46;
-}
-
-.footer-note>span {
-    margin-left: 4px;
 }
 
 .feedback {
@@ -1242,7 +1199,7 @@ legend {
         padding-bottom: 35px;
     }
     .status-card {
-        min-height: 218px;
+        min-height: 132px;
     }
     .checkin-card {
         padding-top: 30px;
@@ -1267,7 +1224,7 @@ legend {
         padding: 0 28px;
     }
     .header {
-        min-height: 90px;
+        min-height: 76px;
         gap: 18px;
     }
     .dashboard,.stats-columns {
@@ -1276,7 +1233,7 @@ legend {
     }
     .status-card {
         padding: 24px;
-        min-height: 195px;
+        min-height: 132px;
     }
     .status-card h2 {
         font-size: 25px;
@@ -1327,9 +1284,6 @@ legend {
     .page-heading {
         padding: 28px 0 25px;
     }
-    .date-card .date-note {
-        font-size: 10px;
-    }
     .filter-card {
         padding: 19px;
         gap: 16px;
@@ -1342,7 +1296,7 @@ legend {
     }
     .brand small {
         font-size: 7px;
-        letter-spacing: 1.1px;
+        letter-spacing: .4px;
     }
     .metrics-grid {
         gap: 16px;
@@ -1350,14 +1304,11 @@ legend {
     .metric {
         padding: 22px 20px;
     }
-    .footer {
-        padding: 23px 0;
-    }
 }
 
 @media(min-width:761px) and (max-height:800px) {
     .header {
-        min-height: 79px;
+        min-height: 68px;
     }
     .page-heading {
         padding: 23px 0;
@@ -1372,7 +1323,7 @@ legend {
         margin-bottom: 8px;
     }
     .status-card {
-        min-height: 174px;
+        min-height: 132px;
         padding-top: 20px;
         padding-bottom: 20px;
     }
@@ -1411,9 +1362,6 @@ legend {
     .weekly-people {
         margin: 17px 0;
     }
-    .footer {
-        padding: 20px 0;
-    }
 }
 
 @media(max-width:760px) {
@@ -1421,10 +1369,10 @@ legend {
         padding: 0 22px;
     }
     .header {
-        min-height: 87px;
+        min-height: 75px;
         gap: 13px;
         flex-wrap: wrap;
-        padding: 17px 0;
+        padding: 12px 0;
     }
     .brand {
         font-size: 18px;
@@ -1457,9 +1405,6 @@ legend {
         font-size: 31px;
         letter-spacing: -1px;
     }
-    .date-card {
-        display: none;
-    }
     .eyebrow {
         font-size: 9px;
     }
@@ -1476,7 +1421,7 @@ legend {
         align-items: start;
     }
     .status-card {
-        min-height: 188px;
+        min-height: 132px;
         padding: 25px;
     }
     .status-card h2 {
@@ -1535,13 +1480,6 @@ legend {
     .weekly-people span {
         font-size: 9px;
     }
-    .footer {
-        flex-wrap: wrap;
-        padding: 24px 0;
-    }
-    .footer-note {
-        display: none;
-    }
     .filter-card {
         padding: 19px;
         gap: 21px;
@@ -1599,7 +1537,7 @@ legend {
     }
     .brand small {
         font-size: 6px;
-        letter-spacing: 1px;
+        letter-spacing: .3px;
     }
     .header-tools {
         gap: 0;
@@ -1619,7 +1557,7 @@ legend {
     }
     .status-card {
         padding: 23px 20px;
-        min-height: 186px;
+        min-height: 132px;
     }
     .status-card h2 {
         font-size: 25px;
@@ -1644,7 +1582,7 @@ legend {
         height: 107px;
         margin-right: 0;
         margin-left: 10px;
-        transform: rotate(-7deg) scale(.95);
+        transform: translateY(-50%) rotate(-7deg) scale(.7);
     }
     .machine-top {
         padding: 0 6px;
@@ -1816,9 +1754,6 @@ legend {
         min-height: 44px;
         font-size: 10px;
     }
-    .footer {
-        font-size: 9px;
-    }
     .notice {
         font-size: 12px;
     }
@@ -1860,7 +1795,7 @@ legend {
         align-items: start;
     }
     .status-card {
-        min-height: 192px;
+        min-height: 132px;
     }
     .status-copy {
         max-width: calc(100% - 140px);
@@ -1882,13 +1817,13 @@ legend {
         padding-bottom: 19px;
     }
     .status-card {
-        min-height: 157px;
+        min-height: 132px;
     }
     .status-card h2 {
         font-size: 24px;
     }
     .machine-illustration {
-        transform: rotate(-7deg) scale(.85);
+        transform: translateY(-50%) rotate(-7deg) scale(.7);
     }
     .checkin-card {
         padding-top: 18px;
@@ -1904,9 +1839,6 @@ legend {
     }
     .action-button {
         min-height: 82px;
-    }
-    .form-footnote {
-        margin-top: 12px;
     }
     .main-column {
         gap: 15px;
@@ -1947,4 +1879,60 @@ legend {
     background: var(--sage-bg);
     color: var(--sage-ink);
     border-radius: 20px;
+}
+
+/* A compact clock replaces the introductory copy on the kitchen panel. */
+.shell {
+    padding-bottom: 24px;
+}
+
+.home-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 0;
+}
+
+.date-time {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 24px;
+    line-height: 1.25;
+    letter-spacing: -.6px;
+}
+
+.date-time-clock {
+    padding-left: 16px;
+    border-left: 1px solid var(--line);
+    color: var(--green);
+    font-size: 30px;
+    font-variant-numeric: tabular-nums;
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+@media(max-width:760px) {
+    .home-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+        padding: 18px 0;
+    }
+    .date-time {
+        font-size: 20px;
+        gap: 12px;
+    }
+    .date-time-clock {
+        font-size: 26px;
+        padding-left: 12px;
+    }
 }

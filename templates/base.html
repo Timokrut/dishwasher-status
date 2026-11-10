@@ -13,11 +13,11 @@
         </title>
         <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
         <link rel="manifest" href="/static/manifest.webmanifest">
-        <link rel="stylesheet" href="/static/style.css?v=2">
+        <link rel="stylesheet" href="/static/style.css?v=3">
         <script>
             try { if (localStorage.getItem('dishwasher-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}
         </script>
-        <script src="/static/app.js?v=2" defer>
+        <script src="/static/app.js?v=3" defer>
         </script>
     </head>
     <body data-revision="{{ revision|default('') }}" data-page="{{ page }}">
@@ -61,7 +61,7 @@
                     <span>
                         Посудомойка
                         <small>
-                            МАЛЕНЬКИЕ ДЕЛА. ОБЩИЙ ДОМ.
+                            Кто не отметился — не разбирал
                         </small>
                     </span>
                 </a>
@@ -90,23 +90,6 @@
                 {% block content %}
                 {% endblock %}
             </main>
-            <footer class="footer">
-                <span>
-                    <span class="connection-dot" id="connection-dot">
-                    </span>
-                    <span id="connection-label" role="status">
-                        Общая кухонная панель
-                    </span>
-                </span>
-                <span class="footer-note">
-                    Спасибо за заботу о доме
-                    <span aria-hidden="true">
-                        ♡
-                    </span>
-                </span>
-                <span id="clock">
-                </span>
-            </footer>
         </div>
         <div id="notice" class="notice" role="status" hidden>
         </div>

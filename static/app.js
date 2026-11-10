@@ -17,12 +17,17 @@
         if (!persistent) noticeTimer = setTimeout(function () { notice.hidden = true; }, 7000);
     }
     function storageSet(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+    var clockTimer;
     function updateClock() {
+        clearTimeout(clockTimer);
         var now = new Date();
         var clock = document.getElementById('clock');
-        clock.textContent = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        if (clock) clock.textContent = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
         var date = document.getElementById('today-date');
-        if (date) date.textContent = now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+        if (date) {
+            var dateText = now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+            date.textContent = dateText.charAt(0).toUpperCase() + dateText.slice(1);
+        }
         var times = document.querySelectorAll('time[datetime]');
         for (var i = 0; i < times.length; i++) {
             var seconds = Math.max(0, Math.floor((now - new Date(times[i].getAttribute('datetime'))) / 1000));
@@ -31,9 +36,9 @@
             else if (seconds < 86400) times[i].textContent = Math.floor(seconds / 3600) + ' ч назад';
             else if (seconds < 604800) times[i].textContent = Math.floor(seconds / 86400) + ' дн назад';
         }
+        clockTimer = setTimeout(updateClock, 60000 - now.getSeconds() * 1000 - now.getMilliseconds());
     }
     updateClock();
-    setInterval(updateClock, 30000);
 
     document.getElementById('theme-toggle').addEventListener('click', function () {
         var dark = document.documentElement.getAttribute('data-theme') !== 'dark';
@@ -93,13 +98,12 @@
         var radios = eventForm.querySelectorAll('input[name="user"]');
         for (var i = 0; i < radios.length; i++) radios[i].checked = false;
         selectedAt = 0;
-        if (message) document.getElementById('form-hint').textContent = message;
+        if (message) showNotice(message);
     }
     if (eventForm) {
         eventForm.addEventListener('change', function (event) {
             if (event.target.name === 'user') {
                 selectedAt = Date.now();
-                document.getElementById('form-hint').textContent = event.target.value + ', выберите выполненное действие.';
             }
         });
         var actionButtons = eventForm.querySelectorAll('button[name="action"]');
@@ -111,7 +115,6 @@
             if (selectedAt && Date.now() - selectedAt > 45000) {
                 event.preventDefault();
                 resetSelection('Выбор сброшен после паузы. Выберите себя заново.');
-                showNotice('После паузы нужно выбрать себя заново.');
             }
         });
         setInterval(function () {
@@ -120,7 +123,7 @@
         // Browsers can restore radio state from the previous shared-device session.
         window.addEventListener('pageshow', function (event) {
             if (event.persisted) { window.location.reload(); return; }
-            resetSelection('Сначала человек, потом действие. Всё просто.');
+            resetSelection();
         });
     }
 
@@ -178,8 +181,10 @@
     }
 
     function setConnection(online) {
-        document.getElementById('connection-dot').className = 'connection-dot' + (online ? '' : ' offline');
-        document.getElementById('connection-label').textContent = online ? 'Связь с кухонной панелью есть' : 'Нет связи с сервером';
+        var dot = document.getElementById('connection-dot');
+        var label = document.getElementById('connection-label');
+        if (dot) dot.className = 'connection-dot' + (online ? '' : ' offline');
+        if (label) label.textContent = online ? 'Связь с сервером есть' : 'Нет связи с сервером';
     }
     function sync() {
         if (!window.fetch || document.visibilityState === 'hidden' || busy) return;
